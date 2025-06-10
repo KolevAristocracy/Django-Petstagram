@@ -1,7 +1,12 @@
-from django.urls import path
+from django.urls import path, include
 
 from petstagram.common import views
 
 urlpatterns = [
     path('', views.home_page, name='home-page'),
-]
+    path('<int:photo_id>/', include([
+        path('like/', views.like, name='like'),
+        path('share/', views.share, name='share'),
+]))
+    ]
+
