@@ -57,6 +57,7 @@ body {
     width: -10%;
     margin: 0 18% 5% 0;
     text-align: end;
+
 }
 
 .searchbar label {
@@ -85,8 +86,8 @@ body {
 
 .searchbar img {
     position: absolute;
-    margin-left: -2.5rem;
-    margin-top: -0.8rem;
+    margin-left: -2.45rem;
+    margin-top: -2.45rem;
 }
 
 .searchbar input::placeholder {
