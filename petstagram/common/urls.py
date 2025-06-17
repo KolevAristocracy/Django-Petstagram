@@ -3,7 +3,7 @@ from django.urls import path, include
 from petstagram.common import views
 
 urlpatterns = [
-    path('', views.home_page, name='home-page'),
+    path('', views.HomePageView.as_view(), name='home-page'),
 
     path('<int:photo_id>/', include([
         path('like/', views.like, name='like'),

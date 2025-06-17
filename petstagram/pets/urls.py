@@ -3,10 +3,10 @@ from django.urls import path, include
 from petstagram.pets import views
 
 urlpatterns = [
-    path('add/', views.pets_add, name='pets-add'),
+    path('add/', views.AddPetView.as_view(), name='pets-add'),
     path('<str:username>/pet/<slug:pet_slug>/', include([
-        path('', views.pets_details, name='pets-details'),
-        path('edit/', views.pets_edit, name='pets-edit'),
-        path('delete/', views.pets_delete, name='pets-delete'),
+        path('', views.PetDetailsView.as_view(), name='pets-details'),
+        path('edit/', views.EditPetView.as_view(), name='pets-edit'),
+        path('delete/', views.DeletePetView.as_view(), name='pets-delete'),
     ]))
 ]
