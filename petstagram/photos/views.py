@@ -1,19 +1,27 @@
-from django.http import HttpResponse, HttpRequest
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.http import HttpResponse, HttpRequest, HttpResponseForbidden
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DetailView
 
 from petstagram.common.forms import CommentForm
+from petstagram.common.mixins import UserIsOwnerMixin
 from petstagram.photos.forms import PhotoCreateForm, PhotoEditForm
 from petstagram.photos.models import Photo
 
 
 # Create your views here.
-class PhotoAddView(CreateView):
+class PhotoAddView(LoginRequiredMixin, CreateView):
     model = Photo
     form_class = PhotoCreateForm
     template_name = 'photos/photo-add-page.html'
     success_url = reverse_lazy('home-page')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
 
 # def photo_add(request) -> HttpResponse:
 #     form = PhotoCreateForm(request.POST or None, request.FILES or None)
@@ -29,7 +37,7 @@ class PhotoAddView(CreateView):
 #     return render(request, template_name='photos/photo-add-page.html', context=context)
 
 
-class PhotoEditView(UpdateView):
+class PhotoEditView(LoginRequiredMixin, UserIsOwnerMixin, UpdateView):
     model = Photo
     form_class = PhotoEditForm
     template_name = 'photos/photo-edit-page.html'
@@ -76,7 +84,12 @@ class PhotoDetailView(DetailView):
 #
 #     return render(request, template_name='photos/photo-details-page.html', context=context)
 
+@login_required
 def photo_delete(request: HttpRequest, pk:int) -> HttpResponse:
     photo = Photo.objects.get(pk=pk)
-    photo.delete()
-    return redirect('home-page')
+
+    if request.user.pk == photo.user.pk:
+        photo.delete()
+        return redirect('home-page')
+
+    return HttpResponseForbidden()

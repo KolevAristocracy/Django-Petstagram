@@ -1,19 +1,27 @@
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView
 
 from petstagram.common.forms import CommentForm
+from petstagram.common.mixins import UserIsOwnerMixin
 from petstagram.pets.forms import PetCreateForm, PetEditForm, PetDeleteForm
 from petstagram.pets.models import Pet
 
 
 # Create your views here.
 
-class AddPetView(CreateView):
+class AddPetView(LoginRequiredMixin, CreateView):
     model = Pet
     form_class = PetCreateForm
     template_name = 'pets/pet-add-page.html'
     success_url = reverse_lazy('profile-details', kwargs={'pk': 1})
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
 # def pets_add(request: HttpRequest) -> HttpResponse:
 #     form = PetCreateForm(request.POST or None)
@@ -62,14 +70,14 @@ class PetDetailsView(DetailView):
 #     return render(request, template_name='pets/pet-details-page.html', context=context)
 
 
-class EditPetView(UpdateView):
+class EditPetView(LoginRequiredMixin, UserIsOwnerMixin, UpdateView):
     model = Pet
     form_class = PetEditForm
     template_name = 'pets/pet-edit-page.html'
     slug_url_kwarg = 'pet_slug'
     context_object_name = 'pet'
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         return reverse_lazy(
             'pets-details',
             kwargs={
@@ -95,7 +103,7 @@ class EditPetView(UpdateView):
 
     # return render(request, template_name='pets/pet-edit-page.html', context=context)
 
-class DeletePetView(DeleteView):
+class DeletePetView(LoginRequiredMixin, UserIsOwnerMixin, DeleteView):
     model = Pet
     template_name = 'pets/pet-delete-page.html'
     success_url = reverse_lazy('profile-details', kwargs={'pk': 1})

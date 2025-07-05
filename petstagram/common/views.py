@@ -73,13 +73,14 @@ class HomePageView(ListView):
 #     return render(request, template_name='common/home-page.html', context=context)
 
 def like(request: HttpRequest, photo_id: int) -> HttpResponse:
-    like_object = Like.objects.filter(to_photo_id=photo_id).first()  # [QuerySet]
+    like_object = Like.objects.filter(to_photo_id=photo_id, user=request.user).first()  # [QuerySet]
 
     if like_object:
         like_object.delete()
     else:
         Like.objects.create(
-            to_photo_id=photo_id
+            to_photo_id=photo_id,
+            user=request.user,
         )
 
     return redirect(request.META.get('HTTP_REFERER') + f"#{photo_id}")
@@ -99,6 +100,7 @@ def add_comment(request: HttpRequest, photo_id: int) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         comment = form.save(commit=False)
         comment.to_photo = Photo.objects.get(pk=photo_id)
+        comment.user = request.user
         comment.save()
 
     return redirect(request.META.get('HTTP_REFERER') + f"#{photo_id}")
